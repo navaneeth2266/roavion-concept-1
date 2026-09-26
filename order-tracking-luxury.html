@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Track Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* --- Design tokens --- */
+    --bg:#0D0D0E;
+    --surface:#141416;
+    --border:#27272A;
+    --border-soft:#2E2E33;
+
+    --gold:#D8B475;
+    --gold-2:#CBA768;
+    --gold-cta-text:#111113;
+
+    --active-border:#524328;
+    --active-bg:#211B12;
+
+    --text-primary:#FFFFFF;
+    --text-eyebrow:#CBA768;
+    --text-muted:#9E9EA7;
+    --text-faint:#71717A;
+
+    --pending:#2A2A2E;
+
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    margin:0; background:var(--bg); color:var(--text-primary); min-height:100%;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:52px 24px 70px;}
+
+  .tag{
+    display:inline-block; background:transparent; color:var(--gold-2);
+    border:1px solid var(--border-soft); font-size:11px; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase; padding:5px 12px; border-radius:20px;
+    margin-bottom:18px;
+  }
+  .eyebrow{
+    color:var(--text-eyebrow); font-size:12px; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px;
+  }
+  h1{
+    font-weight:500; font-size:clamp(28px,4.2vw,42px); line-height:1.25;
+    letter-spacing:-0.01em; margin:0 0 16px; color:var(--text-primary); max-width:16ch;
+  }
+  .lede{color:var(--text-muted); font-size:15.5px; line-height:1.6; max-width:56ch; margin:0 0 36px;}
+  .lede b{color:var(--text-primary); font-weight:500;}
+
+  /* Search row — consolidated sleek row */
+  .search-row{
+    display:flex; align-items:stretch; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:6px; gap:6px; flex-wrap:wrap; margin-bottom:14px;
+  }
+  .search-row input{
+    flex:1; min-width:170px; background:transparent; color:var(--text-primary); border:none;
+    border-radius:8px; padding:14px 16px; font:inherit; font-size:14.5px; outline:none;
+  }
+  .search-row input::placeholder{color:var(--text-faint);}
+  .search-row .divider{width:1px; background:var(--border); margin:8px 0;}
+  .cta{
+    background:var(--gold); color:var(--gold-cta-text); border:none; border-radius:8px;
+    padding:14px 24px; font:inherit; font-weight:600; font-size:12.5px; letter-spacing:.1em;
+    text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:filter .15s;
+  }
+  .cta:hover{filter:brightness(1.06);}
+  .cta:active{filter:brightness(.96);}
+  .hint{color:var(--text-faint); font-size:12.5px; line-height:1.6; margin-bottom:34px;}
+
+  /* Order status card */
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 30px;
+  }
+  .card-label{
+    font-size:11.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--text-faint); margin:0 0 20px;
+  }
+  .order-head{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
+    flex-wrap:wrap; padding-bottom:22px; margin-bottom:22px; border-bottom:1px solid var(--border);
+  }
+  .order-id{font-size:17px; font-weight:600; letter-spacing:.01em;}
+  .order-item{color:var(--text-muted); font-size:13.5px; margin-top:5px; line-height:1.5;}
+  .status-pill{
+    flex-shrink:0; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    padding:7px 14px; border-radius:20px; white-space:nowrap;
+    background:var(--active-bg); color:var(--gold); border:1px solid var(--active-border);
+  }
+
+  /* Timeline */
+  .step{display:flex; gap:16px;}
+  .dot-col{display:flex; flex-direction:column; align-items:center; width:18px;}
+  .dot{width:11px; height:11px; border-radius:50%; background:var(--pending); flex-shrink:0; margin-top:4px; transition:background .2s;}
+  .dot.done{background:var(--gold-2);}
+  .dot.current{
+    background:var(--gold); box-shadow:0 0 0 5px var(--active-bg), 0 0 12px rgba(216,180,117,.35);
+  }
+  .stepline{width:1.5px; flex:1; background:var(--pending); margin:3px 0; min-height:26px;}
+  .stepline.done{background:var(--gold-2);}
+  .step-body{padding-bottom:24px;}
+  .step-title{font-size:14.5px; font-weight:500; color:var(--text-primary);}
+  .step-title.pending{color:var(--text-faint); font-weight:400;}
+  .step-time{font-size:12.5px; color:var(--text-muted); margin-top:3px;}
+
+  .install-note{
+    background:var(--active-bg); border:1px solid var(--active-border); border-radius:8px;
+    padding:14px 18px; font-size:13px; color:var(--text-muted); line-height:1.6; margin-top:8px;
+  }
+  .install-note b{color:var(--gold); font-weight:600;}
+
+  .empty{color:var(--text-muted); font-size:14px;}
+
+  .footnote{
+    color:var(--text-faint); font-size:12px; line-height:1.7; margin-top:30px;
+    padding-top:20px; border-top:1px solid var(--border); max-width:60ch;
+  }
+
+  @media (max-width:520px){
+    .search-row{flex-direction:column;}
+    .search-row .divider{display:none;}
+    .cta{width:100%;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Concept · Order Tracking</span>
+  <div class="eyebrow">Track Order</div>
+  <h1>See exactly where it is — and when someone's coming to fit it.</h1>
+  <p class="lede">Same status page whether you're waiting on a tail light or a full suspension bundle that needs a workshop slot. Try order <b>RV-48213</b> (part only) or <b>RV-51007</b> (part + installation).</p>
+
+  <div class="search-row">
+    <input id="orderInput" placeholder="Order ID — e.g. RV-48213" value="RV-48213">
+    <div class="divider"></div>
+    <input id="phoneInput" placeholder="Phone or email">
+    <button class="cta" id="trackBtn">Track Order →</button>
+  </div>
+  <p class="hint">Demo data only — two sample orders, hardcoded. A production build would call the real order-status API keyed off order ID + phone/email.</p>
+
+  <div class="card">
+    <p class="card-label">Order Status</p>
+    <div id="result"></div>
+  </div>
+
+  <p class="footnote">
+    Rebuilt to the cart/checkout design system: champagne-gold accent in place of the previous red-orange, regular-weight headline in place of extra-bold, and a single consolidated search row instead of separate input blocks — restrained, high-contrast, one accent color used consistently for every "active" state (button, current step, status pill).
+  </p>
+</div>
+
+<script>
+const ORDERS = {
+  "RV-48213": {
+    item: "Toyota Innova Hycross Connected Tail Light",
+    price: "₹8,300",
+    needsInstall: false,
+    status: "out_for_delivery",
+    steps: [
+      {key:"ordered", label:"Ordered", time:"18 Sep, 11:42 AM"},
+      {key:"dispatched", label:"Dispatched", time:"20 Sep, 6:10 PM"},
+      {key:"out_for_delivery", label:"Out for Delivery", time:"23 Sep, 9:02 AM"},
+      {key:"delivered", label:"Delivered", time:null}
+    ]
+  },
+  "RV-51007": {
+    item: "Profender TITAN Series Suspension Bundle Kit — Hilux Travo",
+    price: "₹1,65,000",
+    needsInstall: true,
+    status: "dispatched",
+    steps: [
+      {key:"ordered", label:"Ordered", time:"21 Sep, 3:15 PM"},
+      {key:"dispatched", label:"Dispatched to workshop", time:"24 Sep, 10:30 AM"},
+      {key:"install_scheduled", label:"Installation Scheduled — Kochi Workshop, 28 Sep", time:null},
+      {key:"installed", label:"Installed & Verified", time:null}
+    ]
+  }
+};
+
+const resultEl = document.getElementById('result');
+const orderInput = document.getElementById('orderInput');
+const phoneInput = document.getElementById('phoneInput');
+
+function render(orderId){
+  const order = ORDERS[orderId.trim().toUpperCase()];
+  if (!order){
+    resultEl.innerHTML = `<p class="empty">No order found for "${orderId || '(empty)'}". Try RV-48213 or RV-51007.</p>`;
+    return;
+  }
+  const currentIdx = order.steps.findIndex(s => s.key === order.status);
+  const stepsHtml = order.steps.map((s, i) => {
+    const state = i < currentIdx ? 'done' : (i === currentIdx ? 'current' : '');
+    const isLast = i === order.steps.length - 1;
+    return `<div class="step">
+      <div class="dot-col">
+        <div class="dot ${state}"></div>
+        ${!isLast ? `<div class="stepline ${i < currentIdx ? 'done' : ''}"></div>` : ''}
+      </div>
+      <div class="step-body">
+        <div class="step-title ${state===''?'pending':''}">${s.label}</div>
+        ${s.time ? `<div class="step-time">${s.time}</div>` : (state==='current' ? '<div class="step-time">In progress</div>' : '')}
+      </div>
+    </div>`;
+  }).join('');
+
+  resultEl.innerHTML = `<div class="order-head">
+      <div>
+        <div class="order-id">${orderId.toUpperCase()}</div>
+        <div class="order-item">${order.item} · ${order.price}</div>
+      </div>
+      <span class="status-pill">${order.status.replace(/_/g,' ')}</span>
+    </div>
+    <div>${stepsHtml}</div>
+    ${order.needsInstall ? `<div class="install-note"><b>Installation included.</b> Your workshop slot confirms automatically once the part clears QC — no separate booking needed.</div>` : ''}`;
+}
+
+document.getElementById('trackBtn').addEventListener('click', () => render(orderInput.value));
+orderInput.addEventListener('keydown', e => { if (e.key === 'Enter') render(orderInput.value); });
+render(orderInput.value);
+</script>
+</body>
+</html>
