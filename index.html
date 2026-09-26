@@ -146,7 +146,7 @@
     <input id="phoneInput" placeholder="Phone or email">
     <button class="cta" id="trackBtn">Track Order →</button>
   </div>
-  <p class="hint">Demo data only — two sample orders, hardcoded. A production build would call the real order-status API keyed off order ID + phone/email.</p>
+  <p class="hint">Connected to Supabase — enter your Order ID and phone/email to check order status in real time.</p>
 
   <div class="card">
     <p class="card-label">Order Status</p>
@@ -202,9 +202,26 @@ async function fetchOrder() {
       return;
     }
 
-    const order = Array.isArray(data) ? data[0] : data;
+    let raw = data;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch (e) {}
+    }
 
-    if (!order) {
+    let order = null;
+    if (Array.isArray(raw)) {
+      order = raw.find(item => item !== null && item !== undefined);
+    } else if (raw && typeof raw === 'object') {
+      order = raw;
+    }
+
+    if (order && order.lookup_order && typeof order.lookup_order === 'object') {
+      order = order.lookup_order;
+    }
+
+    const isValidOrder = order && typeof order === 'object' &&
+      (order.order_id !== undefined || order.orderId !== undefined || order.item !== undefined || order.status !== undefined);
+
+    if (!isValidOrder) {
       resultEl.innerHTML = `<p class="empty">No order found matching Order ID "${escapeHtml(orderId)}" and provided contact details.</p>`;
       return;
     }
@@ -217,11 +234,11 @@ async function fetchOrder() {
 }
 
 function renderOrder(order) {
-  const displayId = order.order_id || order.orderId || orderInput.value.trim().toUpperCase();
-  const item = order.item || '';
-  const price = order.price || '';
-  const needsInstall = order.needs_install ?? order.needsInstall ?? false;
-  const status = order.status || '';
+  const displayId = String(order.order_id || order.orderId || orderInput.value.trim()).toUpperCase();
+  const item = String(order.item || '');
+  const price = String(order.price || '');
+  const needsInstall = Boolean(order.needs_install ?? order.needsInstall ?? false);
+  const status = String(order.status || '');
 
   let steps = order.steps || [];
   if (typeof steps === 'string') {
@@ -231,19 +248,25 @@ function renderOrder(order) {
       steps = [];
     }
   }
+  if (!Array.isArray(steps)) steps = [];
 
-  const currentIdx = steps.findIndex(s => s.key === status);
+  const currentIdx = steps.findIndex(s => s && String(s.key || '').trim().toLowerCase() === status.trim().toLowerCase());
+
   const stepsHtml = steps.map((s, i) => {
-    const state = i < currentIdx ? 'done' : (i === currentIdx ? 'current' : '');
+    if (!s) return '';
+    const state = (currentIdx !== -1 && i < currentIdx) ? 'done' : (i === currentIdx ? 'current' : '');
     const isLast = i === steps.length - 1;
+    const label = s.label || s.title || s.key || '';
+    const time = s.time || s.timestamp || null;
+
     return `<div class="step">
       <div class="dot-col">
         <div class="dot ${state}"></div>
-        ${!isLast ? `<div class="stepline ${i < currentIdx ? 'done' : ''}"></div>` : ''}
+        ${!isLast ? `<div class="stepline ${currentIdx !== -1 && i < currentIdx ? 'done' : ''}"></div>` : ''}
       </div>
       <div class="step-body">
-        <div class="step-title ${state===''?'pending':''}">${escapeHtml(s.label)}</div>
-        ${s.time ? `<div class="step-time">${escapeHtml(s.time)}</div>` : (state==='current' ? '<div class="step-time">In progress</div>' : '')}
+        <div class="step-title ${state === '' ? 'pending' : ''}">${escapeHtml(label)}</div>
+        ${time ? `<div class="step-time">${escapeHtml(time)}</div>` : (state === 'current' ? '<div class="step-time">In progress</div>' : '')}
       </div>
     </div>`;
   }).join('');
