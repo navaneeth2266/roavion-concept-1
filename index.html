@@ -157,8 +157,16 @@
     Rebuilt to the cart/checkout design system: champagne-gold accent in place of the previous red-orange, regular-weight headline in place of extra-bold, and a single consolidated search row instead of separate input blocks — restrained, high-contrast, one accent color used consistently for every "active" state (button, current step, status pill).
   </p>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ADD HERE — before const ORDERS
+const supabaseUrl = 'https://hbsauoeqjmoofeqoaxnr.supabase.co/rest/v1/';
+const supabaseKey = 'sb_publishable_eE-qfUTJ1L434rR7m7WvwQ_SwksJPTp';
+
+const supabase = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 const ORDERS = {
   "RV-48213": {
     item: "Toyota Innova Hycross Connected Tail Light",
